@@ -29,7 +29,8 @@ The rules are that diamond layers (`1`) can only be followed by other diamond la
 The program should verify the input if need be.
 
 ## REFERENCES
-Thanks to Christoph Salzmann for writing the original programme this is based on.
+Thanks to Christoph Salzmann for writing the original programme this is based on, Grace Day for code contributions, and Mark Wilson.
 
-1 P. Németh, K. Mccoll, R. L. Smith, M. Murri, L. A. J. Garvie, M. Alvaro, B. Pécz, A. P. Jones, F. Corà, C. G. Salzmann and P. F. Mcmillan, Nano Lett., 2020, 20, 3611–3619. http://dx.doi.org/10.1021/acs.nanolett.0c00556
-2 L. Radosinski, F. Formalik, A. Olejniczak and A. Radosz, Appl. Surf. Sci., 2017, 404, 154–161. http://dx.doi.org/10.1016/j.apsusc.2017.01.085
+* P. Németh, K. Mccoll, R. L. Smith, M. Murri, L. A. J. Garvie, M. Alvaro, B. Pécz, A. P. Jones, F. Corà, C. G. Salzmann and P. F. Mcmillan, Nano Lett., 2020, 20, 3611–3619. http://dx.doi.org/10.1021/acs.nanolett.0c00556
+
+* L. Radosinski, F. Formalik, A. Olejniczak and A. Radosz, Appl. Surf. Sci., 2017, 404, 154–161. http://dx.doi.org/10.1016/j.apsusc.2017.01.085
