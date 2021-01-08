@@ -151,4 +151,4 @@ def write_lammpsdata(filename: str,
         fi.write("Atoms\n")
         fi.write("\n")
         for idx, row in enumerate(positions, 1):
-            fi.write(f"1 {row[0]}  {row[1]}  {row[2]}\n")
+            fi.write(f"{idx} 1 {row[0]}  {row[1]}  {row[2]}\n")
