@@ -10,8 +10,8 @@ Adapted from a Pascal program of unknown provenance.
 @date: 2020-01-06
 """
 
-from typing import Iterable, Union
 from enum import Enum, unique
+from typing import Iterable, Union
 
 
 @unique
@@ -19,7 +19,8 @@ class LayerTypes(Enum):
     """
     Represent each of the 4 different valid layer types.
     """
-    Diamond = 1,
+
+    Diamond = (1,)
     DiamondGraphene = 2
     Graphene = 3
     GrapheneDiamond = 4
@@ -68,8 +69,10 @@ def verify_layer_sequence(sequence: Iterable[Union[LayerTypes, int]]) -> bool:
         if sequence[idx] == LayerTypes.Diamond:
             # Diamond must be followed by diamond
             # or diamond/graphene interace.
-            if sequence[next_idx] not in (LayerTypes.Diamond,
-                                          LayerTypes.DiamondGraphene):
+            if sequence[next_idx] not in (
+                LayerTypes.Diamond,
+                LayerTypes.DiamondGraphene,
+            ):
                 return False
         elif sequence[idx] == LayerTypes.DiamondGraphene:
             # diamond/graphene interface must be followed by
@@ -79,8 +82,10 @@ def verify_layer_sequence(sequence: Iterable[Union[LayerTypes, int]]) -> bool:
         elif sequence[idx] == LayerTypes.Graphene:
             # graphene must be followed by graphene or
             # graphene / diamond interface
-            if sequence[next_idx] not in (LayerTypes.Graphene,
-                                          LayerTypes.GrapheneDiamond):
+            if sequence[next_idx] not in (
+                LayerTypes.Graphene,
+                LayerTypes.GrapheneDiamond,
+            ):
                 return False
         elif sequence[idx] == LayerTypes.GrapheneDiamond:
             if sequence[next_idx] not in (LayerTypes.Diamond,):
@@ -112,7 +117,7 @@ def sequence_from_string(string: str) -> Iterable[LayerTypes]:
     RuntimeError
         If the sequence is bad.
     """
-    
+
     seq = []
     for item in string.strip():
         if item == "1":
@@ -126,6 +131,7 @@ def sequence_from_string(string: str) -> Iterable[LayerTypes]:
         else:
             raise ValueError(f"Invalid layer type to transform, got {item}")
     return seq
+
 
 def read_sequence_from_file(filename: str) -> Iterable[LayerTypes]:
     """

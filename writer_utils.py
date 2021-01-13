@@ -10,15 +10,14 @@ Write a set of diaphite atomic positions to a variety of file types.
 """
 
 from typing import Optional, TextIO
+
 import numpy as np
 
 
-def write_xyz(filename: str,
-              positions: np.array,
-              comment: Optional[str] = None):
+def write_xyz(filename: str, positions: np.array, comment: Optional[str] = None):
     """
     Write positions to an xyz file.
-    
+
     Parameters
     ----------
     filename
@@ -36,10 +35,7 @@ def write_xyz(filename: str,
             fi.write(f"{row[0]:.5f} {row[1]:.5f} {row[2]:.5f}\n")
 
 
-def write_cif_header(file: TextIO,
-                     cell_a: float,
-                     cell_b: float,
-                     cell_c: float) -> None:
+def write_cif_header(file: TextIO, cell_a: float, cell_b: float, cell_c: float) -> None:
     """
     Write the CIF file header out to an open file handle.
     Parameters
@@ -57,39 +53,37 @@ def write_cif_header(file: TextIO,
     None
     """
 
-    file.write('data_type2diaphite\n')
-    file.write('_symmetry_space_group_name_H-M    P1\n')
-    file.write('_symmetry_Int_Tables_number       1\n')
-    file.write('_symmetry_cell_setting            triclinic\n')
-    file.write('loop_\n')
-    file.write('_symmetry_equiv_pos_as_xyz\n')
-    file.write('  x,y,z\n')
-    file.write(f'_cell_length_a                    {cell_a:.5f}\n')
-    file.write(f'_cell_length_b                    {cell_b:.5f}\n')
-    file.write(f'_cell_length_c                    {cell_c:.5f}\n')
-    file.write('_cell_angle_alpha                 90.0000\n')
-    file.write('_cell_angle_beta                  90.0000\n')
-    file.write('_cell_angle_gamma                 90.0000\n')
-    file.write('loop_\n')
-    file.write('_atom_site_label\n')
-    file.write('_atom_site_type_symbol\n')
-    file.write('_atom_site_fract_x\n')
-    file.write('_atom_site_fract_y\n')
-    file.write('_atom_site_fract_z\n')
-    file.write('_atom_site_occupancy\n')
+    file.write("data_type2diaphite\n")
+    file.write("_symmetry_space_group_name_H-M    P1\n")
+    file.write("_symmetry_Int_Tables_number       1\n")
+    file.write("_symmetry_cell_setting            triclinic\n")
+    file.write("loop_\n")
+    file.write("_symmetry_equiv_pos_as_xyz\n")
+    file.write("  x,y,z\n")
+    file.write(f"_cell_length_a                    {cell_a:.5f}\n")
+    file.write(f"_cell_length_b                    {cell_b:.5f}\n")
+    file.write(f"_cell_length_c                    {cell_c:.5f}\n")
+    file.write("_cell_angle_alpha                 90.0000\n")
+    file.write("_cell_angle_beta                  90.0000\n")
+    file.write("_cell_angle_gamma                 90.0000\n")
+    file.write("loop_\n")
+    file.write("_atom_site_label\n")
+    file.write("_atom_site_type_symbol\n")
+    file.write("_atom_site_fract_x\n")
+    file.write("_atom_site_fract_y\n")
+    file.write("_atom_site_fract_z\n")
+    file.write("_atom_site_occupancy\n")
 
 
-def write_cif(filename: str,
-              positions: np.array,
-              cell_a: float,
-              cell_b: float,
-              cell_c: float):
+def write_cif(
+    filename: str, positions: np.array, cell_a: float, cell_b: float, cell_c: float
+):
     """
     Write a Crystallographic Information File out to the file with given name.
-    
+
     CIF includes crystallographic data handled by write_cif_header,
     and uses reduced positions (i.e. fractions of cell vectors).
-    
+
     Parameters
     ----------
     filename
@@ -114,14 +108,12 @@ def write_cif(filename: str,
             fi.write(f"C{idx}  C  {row[0]:5.5f}  {row[1]:5.5f}  {row[2]:5.5f}  1\n")
 
 
-def write_lammpsdata(filename: str,
-                     positions: np.array,
-                     cell_a: float,
-                     cell_b: float,
-                     cell_c: float):
+def write_lammpsdata(
+    filename: str, positions: np.array, cell_a: float, cell_b: float, cell_c: float
+):
     """
     Write out a LAMMPS data file.
-    
+
     Parameters
     ----------
     filename

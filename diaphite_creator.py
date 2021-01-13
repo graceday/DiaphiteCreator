@@ -9,35 +9,48 @@ Adapted from a Pascal program of unknown provenance.
 @date: 2020-01-06
 """
 
+import argparse
 from typing import Iterable, Tuple
 
 import numpy as np
-import argparse
 
-from layer_utils import LayerTypes, read_sequence_from_file, sequence_from_string
-from writer_utils import write_xyz, write_cif, write_lammpsdata
+from layer_utils import (LayerTypes, read_sequence_from_file,
+                         sequence_from_string)
+from writer_utils import write_cif, write_lammpsdata, write_xyz
 
 # Default cell constants.
 CELL_A = 6.06885
 CELL_B = 2.50020
 CELL_C = 4.4279
 
-parser = argparse.ArgumentParser(description="Generate input files for diaphite simulations.")
+parser = argparse.ArgumentParser(
+    description="Generate input files for diaphite simulations."
+)
 group = parser.add_mutually_exclusive_group(required=True)
-group.add_argument('--seq_file', type=str, default="seq.txt",
-                    help="Name of the file containing the sequence")
-group.add_argument('--seq', type=str,
-                    help="Sequence of integers 1-4 to use")
+group.add_argument(
+    "--seq_file",
+    type=str,
+    default="seq.txt",
+    help="Name of the file containing the sequence",
+)
+group.add_argument("--seq", type=str, help="Sequence of integers 1-4 to use")
 
-parser.add_argument('--out_file', type=str, default="diaphite.cif",
-                    help="Name of the file to output to. Accepts *.xyz, *.cif, or *.data")
+parser.add_argument(
+    "--out_file",
+    type=str,
+    default="diaphite.cif",
+    help="Name of the file to output to. Accepts *.xyz, *.cif, or *.data",
+)
 
 args = parser.parse_args()
 
-def generate_diamond_layer(cell_a: float = CELL_A,
-                           cell_b: float = CELL_B,
-                           cell_c: float = CELL_C,
-                           zstack: float = 0.0) -> np.array:
+
+def generate_diamond_layer(
+    cell_a: float = CELL_A,
+    cell_b: float = CELL_B,
+    cell_c: float = CELL_C,
+    zstack: float = 0.0,
+) -> np.array:
     """
     Generate atomic positions for one layer of type 1.
 
@@ -60,18 +73,22 @@ def generate_diamond_layer(cell_a: float = CELL_A,
     positions
         The positions of atoms within this layer, a 12x3 numpy array.
     """
-    positions = np.array([[0.470145, -0.499993, 0.082607],
-                         [0.219914, -0.499993, 0.085752],
-                         [-0.107809, 0.000007, 0.244577],
-                         [0.142256, 0.000007, 0.251337],
-                         [-0.184199, -0.499992, 0.408416],
-                         [-0.435601, -0.499992, 0.411123],
-                         [0.485617, 0.000008, 0.575337],
-                         [0.237729, 0.000008, 0.584477],
-                         [-0.089248, -0.499992, 0.736977],
-                         [0.163055, -0.499992, 0.753949],
-                         [-0.171446, 0.000008, 0.890393],
-                         [-0.419689, 0.000008, 0.899108]])
+    positions = np.array(
+        [
+            [0.470145, -0.499993, 0.082607],
+            [0.219914, -0.499993, 0.085752],
+            [-0.107809, 0.000007, 0.244577],
+            [0.142256, 0.000007, 0.251337],
+            [-0.184199, -0.499992, 0.408416],
+            [-0.435601, -0.499992, 0.411123],
+            [0.485617, 0.000008, 0.575337],
+            [0.237729, 0.000008, 0.584477],
+            [-0.089248, -0.499992, 0.736977],
+            [0.163055, -0.499992, 0.753949],
+            [-0.171446, 0.000008, 0.890393],
+            [-0.419689, 0.000008, 0.899108],
+        ]
+    )
     positions[:, 0] *= cell_a
     positions[:, 1] *= cell_b
     positions[:, 2] *= cell_c
@@ -80,10 +97,12 @@ def generate_diamond_layer(cell_a: float = CELL_A,
     return positions
 
 
-def generate_diamond_graphene_layer(cell_a: float = CELL_A,
-                                    cell_b: float = CELL_B,
-                                    cell_c: float = CELL_C,
-                                    zstack: float = 0.0) -> np.array:
+def generate_diamond_graphene_layer(
+    cell_a: float = CELL_A,
+    cell_b: float = CELL_B,
+    cell_c: float = CELL_C,
+    zstack: float = 0.0,
+) -> np.array:
     """
     Generate atomic positions for one layer of type 2.
 
@@ -106,11 +125,15 @@ def generate_diamond_graphene_layer(cell_a: float = CELL_A,
         The positions of atoms within this layer, a 5x3 numpy array.
     """
 
-    positions = np.array([[-0.477407, -0.499992, 0.080036],
-                          [0.25363, -0.499992, 0.102710],
-                          [-0.110947, 0.000007, 0.223845],
-                          [0.159511, 0.000008, 0.261057],
-                          [-0.235384, -0.499993, 0.335202]])
+    positions = np.array(
+        [
+            [-0.477407, -0.499992, 0.080036],
+            [0.25363, -0.499992, 0.102710],
+            [-0.110947, 0.000007, 0.223845],
+            [0.159511, 0.000008, 0.261057],
+            [-0.235384, -0.499993, 0.335202],
+        ]
+    )
 
     positions[:, 0] *= cell_a
     positions[:, 1] *= cell_b
@@ -120,10 +143,12 @@ def generate_diamond_graphene_layer(cell_a: float = CELL_A,
     return positions
 
 
-def generate_graphene_layer(cell_a: float = CELL_A,
-                            cell_b: float = CELL_B,
-                            cell_c: float = CELL_C,
-                            zstack: float = 0.0) -> np.array:
+def generate_graphene_layer(
+    cell_a: float = CELL_A,
+    cell_b: float = CELL_B,
+    cell_c: float = CELL_C,
+    zstack: float = 0.0,
+) -> np.array:
     """
     Generate atomic positions for one layer of type 3.
 
@@ -146,14 +171,18 @@ def generate_graphene_layer(cell_a: float = CELL_A,
         The positions of atoms within this layer, an 8x3 numpy array.
     """
 
-    positions = np.array([[0.220055, 0.000008, 0.168452],
-                          [-0.262165, -0.499992, 0.240856],
-                          [0.234004, -0.499992, 0.323156],
-                          [-0.265033, 0.000008, 0.396307],
-                          [0.253444, -0.499991, 0.649590],
-                          [-0.259395, 0.000008, 0.722740],
-                          [0.259402, 0.000009, 0.807303],
-                          [-0.253437, -0.499992, 0.880449]])
+    positions = np.array(
+        [
+            [0.220055, 0.000008, 0.168452],
+            [-0.262165, -0.499992, 0.240856],
+            [0.234004, -0.499992, 0.323156],
+            [-0.265033, 0.000008, 0.396307],
+            [0.253444, -0.499991, 0.649590],
+            [-0.259395, 0.000008, 0.722740],
+            [0.259402, 0.000009, 0.807303],
+            [-0.253437, -0.499992, 0.880449],
+        ]
+    )
 
     positions[:, 0] *= cell_a
     positions[:, 1] *= cell_b
@@ -162,10 +191,12 @@ def generate_graphene_layer(cell_a: float = CELL_A,
     return positions
 
 
-def generate_graphene_diamond_layer(cell_a: float = CELL_A,
-                                    cell_b: float = CELL_B,
-                                    cell_c: float = CELL_C,
-                                    zstack: float = 0.0) -> np.array:
+def generate_graphene_diamond_layer(
+    cell_a: float = CELL_A,
+    cell_b: float = CELL_B,
+    cell_c: float = CELL_C,
+    zstack: float = 0.0,
+) -> np.array:
     """
     Generate atomic positions for one layer of type 4.
 
@@ -188,15 +219,19 @@ def generate_graphene_diamond_layer(cell_a: float = CELL_A,
         The positions of atoms within this layer, a 9x3 numpy array.
     """
 
-    positions = np.array([[0.26504, 0.000009, 0.163204],
-                          [-0.233995, -0.499992, 0.236350],
-                          [0.262172, -0.499991, 0.318650],
-                          [-0.220045, 0.000008, 0.391059],
-                          [0.23539, -0.499991, 0.650848],
-                          [-0.159505, 0.000008, 0.724989],
-                          [0.110953, 0.000008, 0.762205],
-                          [-0.253625, -0.499993, 0.883341],
-                          [0.477411, -0.499993, 0.906009]])
+    positions = np.array(
+        [
+            [0.26504, 0.000009, 0.163204],
+            [-0.233995, -0.499992, 0.236350],
+            [0.262172, -0.499991, 0.318650],
+            [-0.220045, 0.000008, 0.391059],
+            [0.23539, -0.499991, 0.650848],
+            [-0.159505, 0.000008, 0.724989],
+            [0.110953, 0.000008, 0.762205],
+            [-0.253625, -0.499993, 0.883341],
+            [0.477411, -0.499993, 0.906009],
+        ]
+    )
 
     positions[:, 0] *= cell_a
     positions[:, 1] *= cell_b
@@ -205,7 +240,9 @@ def generate_graphene_diamond_layer(cell_a: float = CELL_A,
     return positions
 
 
-def generate_diaphite_from_seq(layer_sequence: Iterable[LayerTypes]) -> Tuple[np.array, float]:
+def generate_diaphite_from_seq(
+    layer_sequence: Iterable[LayerTypes],
+) -> Tuple[np.array, float]:
     """
     Generate atomic positions for diaphite from a list of layer types.
 
@@ -247,9 +284,11 @@ def main():
     elif out_file.endswith(".data"):
         write_lammpsdata(out_file, positions, CELL_A, CELL_B, zstack)
     else:
-        raise RuntimeError("Did not add a suffix of the form .xyz, .cif or .data to the output file.")
+        raise RuntimeError(
+            "Did not add a suffix of the form .xyz, .cif or .data to the output file."
+        )
     print(f"Successfully wrote the diaphite positions to {out_file}")
+
 
 if __name__ == "__main__":
     main()
-
