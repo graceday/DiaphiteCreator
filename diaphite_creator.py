@@ -14,9 +14,14 @@ from typing import Iterable, Tuple
 
 import numpy as np
 
-from layer_utils import (LayerTypes, read_sequence_from_file,
-                         sequence_from_string)
-from writer_utils import write_cif, write_lammpsdata, write_xyz
+from layer_utils import LayerTypes, read_sequence_from_file, sequence_from_string
+from writer_utils import (
+    write_cif,
+    write_gro,
+    write_lammpsdata,
+    write_lammpstrj,
+    write_xyz,
+)
 
 # Default cell constants.
 CELL_A = 6.06885
@@ -26,7 +31,7 @@ CELL_C = 4.4279
 parser = argparse.ArgumentParser(
     description="Generate input files for diaphite simulations."
 )
-group = parser.add_mutually_exclusive_group(required=True)
+group = parser.add_mutually_exclusive_group(required=False)
 group.add_argument(
     "--seq_file",
     type=str,
@@ -38,8 +43,20 @@ group.add_argument("--seq", type=str, help="Sequence of integers 1-4 to use")
 parser.add_argument(
     "--out_file",
     type=str,
-    default="diaphite.cif",
-    help="Name of the file to output to. Accepts *.xyz, *.cif, or *.data",
+    default="diaphite.data",
+    help="Name of the file to output to. Accepts *.xyz, *.cif, *.lammpstrj, *.gro or *.data",
+)
+
+parser.add_argument(
+    "--nx", type=int, default=1, help="Number of unit cell repeats in x direction"
+)
+
+parser.add_argument(
+    "--ny", type=int, default=1, help="Number of unit cell repeats in y direction"
+)
+
+parser.add_argument(
+    "--nz", type=int, default=1, help="Number of unit cell repeats in z direction"
 )
 
 args = parser.parse_args()
@@ -242,7 +259,7 @@ def generate_graphene_diamond_layer(
 
 def generate_diaphite_from_seq(
     layer_sequence: Iterable[LayerTypes],
-) -> Tuple[np.array, float]:
+) -> Tuple[np.array, np.array]:
     """
     Generate atomic positions for diaphite from a list of layer types.
 
@@ -250,6 +267,13 @@ def generate_diaphite_from_seq(
     ----------
     layer_sequence
         An iterable of integers, each of which represents a layer type.
+
+    Returns
+    -------
+    positions
+        A Nx3 numpy array representing atomic positions in angstroms.
+    simulation cell
+        A 3x2 numpy array in the form [[xlo, xhi], [ylo, yhi], [zlo, zhi]].
     """
     layers = []
     zstack = 0.0
@@ -267,22 +291,85 @@ def generate_diaphite_from_seq(
             layers.append(generate_graphene_diamond_layer(zstack=zstack))
             zstack += CELL_C * 0.99663
     positions = np.vstack(layers)
-    return positions, zstack
+    simulation_cell = np.array([[0.0, CELL_A], [0.0, CELL_B], [0.0, zstack]])
+    return positions, simulation_cell
+
+
+def repeat_unit_cell(
+    positions: np.array, simulation_cell: np.array, nx: int, ny: int, nz: int
+):
+    """
+    Repeat the positions nx, ny and nz times in x, y, z directions.
+
+    Leaves xlo, ylo and zlo unchanged and extends in the direction of xhi, yhi, zhi.
+    Parameters
+    ----------
+    positions
+        An Nx3 array of atomic positions.
+    simulation cell
+        A 3x2 numpy array in the form [[xlo, xhi], [ylo, yhi], [zlo, zhi]].
+    nx
+        Number of repeats in the x direction
+    ny
+        Number of repeats in the y direction
+    nz
+        Number of repeats in the z direction
+    Returns
+    -------
+    positions
+        An Nx3 array of repeated atomic positions
+    simulation cell
+        A 3x2 numpy array in the form [[xlo, xhi], [ylo, yhi], [zlo, zhi]].
+    """
+    assert nx >= 1, "nx must be a positive integer"
+    assert ny >= 1, "ny must be a positive integer"
+    assert nz >= 1, "nz must be a positive integer"
+    cell_a = simulation_cell[0, 1] - simulation_cell[0, 0]
+    cell_b = simulation_cell[1, 1] - simulation_cell[1, 0]
+    cell_c = simulation_cell[2, 1] - simulation_cell[2, 0]
+
+    positions = np.vstack(
+        [positions + np.array([i * cell_a, 0.0, 0.0]) for i in range(nx)]
+    )
+    positions = np.vstack(
+        [positions + np.array([0.0, j * cell_b, 0.0]) for j in range(ny)]
+    )
+    positions = np.vstack(
+        [positions + np.array([0.0, 0.0, k * cell_c]) for k in range(nz)]
+    )
+
+    # Re-calculate the size of the simulation box
+    simulation_cell[0, 1] = simulation_cell[0, 0] + (nx * cell_a)
+    simulation_cell[1, 1] = simulation_cell[1, 0] + (ny * cell_b)
+    simulation_cell[2, 1] = simulation_cell[2, 0] + (nz * cell_c)
+    return positions, simulation_cell
 
 
 def main():
+    """
+    Generate a diaphite sequence and write to a file.
+    """
     if args.seq_file:
         sequence = read_sequence_from_file(args.seq_file)
     elif args.seq:
         sequence = sequence_from_string(args.seq)
-    positions, zstack = generate_diaphite_from_seq(sequence)
+    positions, simulation_cell = generate_diaphite_from_seq(sequence)
+
+    positions, simulation_cell = repeat_unit_cell(
+        positions, simulation_cell, args.nx, args.ny, args.nz
+    )
+
     out_file = args.out_file
     if out_file.endswith(".xyz"):
-        write_xyz(out_file, positions, sequence)
+        write_xyz(out_file, positions, simulation_cell, sequence)
     elif out_file.endswith(".cif"):
-        write_cif(out_file, positions, CELL_A, CELL_B, zstack)
+        write_cif(out_file, positions, simulation_cell)
     elif out_file.endswith(".data"):
-        write_lammpsdata(out_file, positions, CELL_A, CELL_B, zstack)
+        write_lammpsdata(out_file, positions, simulation_cell)
+    elif out_file.endswith(".lammpstrj"):
+        write_lammpstrj(out_file, positions, simulation_cell)
+    elif out_file.endswith(".gro"):
+        write_gro(out_file, positions, simulation_cell)
     else:
         raise RuntimeError(
             "Did not add a suffix of the form .xyz, .cif or .data to the output file."

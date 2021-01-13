@@ -11,7 +11,7 @@ Adapted from a Pascal program of unknown provenance.
 """
 
 from enum import Enum, unique
-from typing import Iterable, Union
+from typing import Iterable, Union, Sequence
 
 
 @unique
@@ -26,9 +26,22 @@ class LayerTypes(Enum):
     GrapheneDiamond = 4
 
 
-def int_seq_to_layertypes(int_seq: Iterable[int]) -> Iterable[LayerTypes]:
+def int_seq_to_layertypes(int_seq: Sequence[int]) -> Sequence[LayerTypes]:
+    """
+    Convert an integer sequence to a sequence of layer types.
+    
+    Parameters
+    ----------
+    int_seq
+        An iterable of integers in the range [1, 4)
+    Returns
+    -------
+    type_seq
+        A list of LayerTypes, in the same order as before.
+    """
     new_seq = []
     for item in int_seq:
+        assert 1 <= item <= 4, f"Integers must be 1, 2, 3, 4. Got {item}"
         if item == 1:
             new_seq.append(LayerTypes.Diamond)
         elif item == 2:
@@ -37,12 +50,10 @@ def int_seq_to_layertypes(int_seq: Iterable[int]) -> Iterable[LayerTypes]:
             new_seq.append(LayerTypes.Graphene)
         elif item == 4:
             new_seq.append(LayerTypes.GrapheneDiamond)
-        else:
-            raise ValueError(f"Invalid layer type to transform, got {item}")
     return new_seq
 
 
-def verify_layer_sequence(sequence: Iterable[Union[LayerTypes, int]]) -> bool:
+def verify_layer_sequence(sequence: Sequence[Union[LayerTypes, int]]) -> bool:
     """
     Verify that a sequence of layers is valid.
 
@@ -64,9 +75,9 @@ def verify_layer_sequence(sequence: Iterable[Union[LayerTypes, int]]) -> bool:
     if all(isinstance(item, int) for item in sequence):
         sequence = int_seq_to_layertypes(sequence)
 
-    for idx in range(len(sequence)):
+    for idx, item in enumerate(sequence):
         next_idx = (idx + 1) % len(sequence)
-        if sequence[idx] == LayerTypes.Diamond:
+        if item == LayerTypes.Diamond:
             # Diamond must be followed by diamond
             # or diamond/graphene interace.
             if sequence[next_idx] not in (
@@ -74,12 +85,12 @@ def verify_layer_sequence(sequence: Iterable[Union[LayerTypes, int]]) -> bool:
                 LayerTypes.DiamondGraphene,
             ):
                 return False
-        elif sequence[idx] == LayerTypes.DiamondGraphene:
+        elif item == LayerTypes.DiamondGraphene:
             # diamond/graphene interface must be followed by
             # graphene
             if sequence[next_idx] not in (LayerTypes.Graphene,):
                 return False
-        elif sequence[idx] == LayerTypes.Graphene:
+        elif item == LayerTypes.Graphene:
             # graphene must be followed by graphene or
             # graphene / diamond interface
             if sequence[next_idx] not in (
@@ -87,7 +98,7 @@ def verify_layer_sequence(sequence: Iterable[Union[LayerTypes, int]]) -> bool:
                 LayerTypes.GrapheneDiamond,
             ):
                 return False
-        elif sequence[idx] == LayerTypes.GrapheneDiamond:
+        elif item == LayerTypes.GrapheneDiamond:
             if sequence[next_idx] not in (LayerTypes.Diamond,):
                 return False
         else:
@@ -95,7 +106,7 @@ def verify_layer_sequence(sequence: Iterable[Union[LayerTypes, int]]) -> bool:
     return True
 
 
-def sequence_from_string(string: str) -> Iterable[LayerTypes]:
+def sequence_from_string(string: str) -> Sequence[LayerTypes]:
     """
     Read in a layer sequence from a string.
 
@@ -133,7 +144,7 @@ def sequence_from_string(string: str) -> Iterable[LayerTypes]:
     return seq
 
 
-def read_sequence_from_file(filename: str) -> Iterable[LayerTypes]:
+def read_sequence_from_file(filename: str) -> Sequence[LayerTypes]:
     """
     Read in a layer sequence from a file.
 
