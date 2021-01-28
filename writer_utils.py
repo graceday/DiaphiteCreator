@@ -147,7 +147,7 @@ def write_lammpsdata(filename: str, positions: np.array, simulation_cell: np.arr
         fi.write("\n")
         fi.write("Masses\n")
         fi.write("\n")
-        fi.write("1 12")
+        fi.write("1 12\n")
         fi.write("\n")
         fi.write("Atoms\n")
         fi.write("\n")
